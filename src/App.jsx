@@ -129,7 +129,7 @@ function FilterPanel({ data, cols, param, setParam }) {
             }
             </div>
             <div className='mt-1 d-flex justify-content-end'>
-              <Button size='sm' variant='danger' href='/'>Reset</Button>
+              <Button size='sm' variant='danger' href='./'>Reset</Button>
             </div>
           </Accordion.Body>
         </Accordion.Item>
