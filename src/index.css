@@ -5,7 +5,7 @@
 }
 
 .dropdowns {
-  max-width: max(170px, 33vh);
+  max-width: max(170px, 33vw);
 }
 
 .modal-header {
