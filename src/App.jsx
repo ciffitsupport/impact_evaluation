@@ -12,6 +12,7 @@ import 'primeicons/primeicons.css'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'leaflet/dist/leaflet.css'
 import './index.css'
+import logo from './assets/logo.svg'
 
 import { Map } from './Map'
 import { About, Procedure, Glossary, Setting } from './pages'
@@ -51,10 +52,8 @@ function AppMenu({ setting, setSetting }) {
     <Navbar expand='sm'>
       <Navbar.Brand href='./'>
         <div className='hstack gap-3' style={{height:'40px'}}>
-          {/*
-          <img alt='ciff-logo' src='./assets/logo.svg' height='40px'/>
+          <img alt='ciff-logo' src={logo} height='40px'/>
           <div className='vr'></div>
-          */}
           <div>Impact Portal</div>
         </div>
       </Navbar.Brand>
@@ -127,9 +126,9 @@ function FilterPanel({ data, cols, param, setParam }) {
                 )
               })
             }
+            <div className='mt-1'>
+              <Button size='sm' variant='danger' href='/'>Reset</Button>
             </div>
-            <div className='mt-1 d-flex justify-content-end'>
-              <Button size='sm' variant='danger' href='./'>Reset</Button>
             </div>
           </Accordion.Body>
         </Accordion.Item>
@@ -321,7 +320,7 @@ function MainApp() {
   const theInfoPanel = useMemo(() => {
     if (filterParam.country !== ''){
       return (
-        <div id='panel-info' className='col-sm-3 p-2'>
+        <div>
           <InfoPanel 
             data={filteredTable}
             param={filterParam}
@@ -343,7 +342,7 @@ function MainApp() {
 
   return (
     <div className='p-0'>
-      <div className='p-0 m-0' style={{zIndex:10}}>
+      <div id='main-map' className='p-0 m-0' style={{zIndex:10}}>
         {theMap}
       </div>
 
@@ -353,11 +352,13 @@ function MainApp() {
             <AppMenu setting={settingOption} setSetting={setSettingOption}/>
           </div>
           <div className='row m-0 p-0 justify-content-between'>
-            <div id='panel-filter' className='col-sm-3 p-2'>
+            <div id='panel-filter' className='col-lg-3 p-2'>
               {theFilterPanel}
             </div>
 
-            {theInfoPanel}
+            <div id='panel-info' className='col-lg-3 p-2'>
+              {theInfoPanel}
+            </div>
           </div>
         </div>
       </div>      
