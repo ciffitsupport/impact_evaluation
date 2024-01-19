@@ -5,7 +5,7 @@
 }
 
 .dropdowns {
-  max-width: max(170px, 33vw);
+  max-width: max(170px, 33vh);
 }
 
 .modal-header {
@@ -44,6 +44,7 @@
 }
 
 .leaflet-control-zoom{
+  display: block;
   position: relative;
   left: -2px;
   top: calc(100vh - 85px);
@@ -91,5 +92,51 @@ path.leaflet-interactive:focus {
   }
   .leaflet-control-zoom{
     top: calc(60vh - 85px);
+  }
+}
+
+@media only print {
+  body{
+    -webkit-print-color-adjust:exact !important;
+    print-color-adjust:exact !important;
+  }
+
+  .modal-body {
+    max-height: none;
+    break-inside: avoid;
+  }
+
+  #main-content {
+    background-color: #fff;
+    position: relative;
+    min-height: 50vh;
+  }
+
+  #panel-filter {
+    width: 100%;
+  }
+
+  #panel-info {
+    width: 100%;
+    break-inside: avoid;
+  }
+
+  #list-info {
+    max-height: none;
+  }
+  
+  #detail-info {
+    max-height: none;
+  }
+  
+  #main-map {
+    top: 0px;
+    width: 100%;
+    height: 50vh;
+    position: relative;
+  }
+  
+  .leaflet-control-zoom{
+    display: none;
   }
 }
