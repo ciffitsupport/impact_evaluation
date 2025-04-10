@@ -2,12 +2,22 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="./src/assets/favicon.png" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CIFF Impact Portal</title>
-    <script type="module" src="./src/main.jsx"></script>
+    <title>CIFF Impact Evaluation Portal</title>
   </head>
   <body>
     <div id="root"></div>
+      <script type="module" src="./src/main.jsx"></script>
   </body>
+  <style>
+    html { display : none; }
+  </style>
+  <script>
+    if (self == top) {
+      document.documentElement.style.display = 'block';
+    } else {
+      top.location = self.location;
+    }
+  </script>
 </html>

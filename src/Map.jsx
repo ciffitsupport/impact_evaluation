@@ -1,228 +1,264 @@
-import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
-import { MapContainer, GeoJSON, Marker, CircleMarker, Popup, Pane, TileLayer, useMap } from 'react-leaflet'
-import { Badge } from 'react-bootstrap'
+import { useMemo, useRef, useEffect } from 'react'
+import { renderToString } from 'react-dom/server'
+import { MapContainer, GeoJSON, Marker, Pane, TileLayer, useMap } from 'react-leaflet'
+import { Badge, Button, ButtonGroup, Stack } from 'react-bootstrap'
 import 'leaflet/dist/leaflet.css'
 import * as L from 'leaflet'
 import 'primeicons/primeicons.css'
-
-import table from './data/impact_table.json'
+import { CircleFlag } from 'react-circle-flags'
 import boundary from './data/boundary.json'
-import { onlyUnique } from './utils'
-import { activeStyle, regionStyle, basemaps } from './config'
+import { countOccurrence, getBbox } from './utils'
+import { basemaps } from './config'
 
 //let main_map
 
 const init = {center:[0,10], zoom:4}
 let main_map
 
-const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)
-const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
-const height = vw < 576 ? '60vh' : '100vh'
+//const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)
+//const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
+//const height = vw < 576 ? '60vh' : '100vh'
 
-export function Map({ data, param, setParam, setting }){
-    const DefineMap = () => {
-        main_map = useMap();
-        main_map.on({'dblclick': function(e){
-            window.open('./', '_self')
-        }})
-    }
-
-    let filteredTable = data
-    let countries = []
-    let regions = []
-
-    if (param.id) {
-        filteredTable = data.filter((item) => item['EvaluationID'] === param.id)[0]
-        regions = filteredTable.Region.replace(/'/g, '"')
-        if (regions) {regions = JSON.parse(regions)[param.country]}
-        
-        if (param.multi) {
-            countries = filteredTable.Country.split(', ')
+export function Map({ data, param, setParam }){
+    var countries = data.map((item) => {
+        if (typeof item.Country === 'string'){
+            return item.Country.replaceAll(', ',',').split(',')
         } else {
-            countries = [param.country]
+            return item.Country
         }
-    } else if (param.country) {
-        countries = [param.country]
-    } else {
-        countries = []
-        data.forEach((item) => countries.push(item.Country.split(', ')))
-        countries = countries.flat().filter(onlyUnique)
+    }).flat()
+
+    const countCountry = countOccurrence(countries)
+
+    if (param.country) {
+        countries = countries.includes(param.country) ? [param.country] : []
     }
 
     const countryBoundary = useMemo(() => {
-        if (countries.length > 1 && main_map){
-            main_map.setView(init.center, init.zoom, {animate:true, duration:0.5})
-        }
-        return (
-            boundary.features.filter((item) => {
-                let selected = item.properties.Level === 'ADM_0'
-                selected = selected && (countries.includes(item.properties.Country))
-                return selected;
-            })
-        )
-    }, [countries])
-
-    const regionBoundary = boundary.features.filter((item) => {
-        let selected = item.properties.Level === 'ADM_1'
-        selected = selected && (regions.includes(item.properties.Region))
-        return selected;
-    })        
-
-    let points = {}
-    let coords = [];
-    if (param.id && filteredTable['Coord'] !== ''){
-        points = JSON.parse(filteredTable['Coord'].replace(/'/g, '"'));
-        Object.keys(points).forEach((key) => {
-            if (key === param.country){
-                coords = points[key];
-            }
+        let features = boundary.features.filter((item) => {return (item.properties.Level === 'ADM_0') && (countries.includes(item.properties.Country))})
+        features.forEach((feature) => {
+            feature.properties['count'] = countCountry[feature.properties.Country]
+            feature.param = param
         })
-    }
-    
+        return features
+    }, [countries, countCountry, param])
+
     const refCountry = useRef()
+    const refOverlay = useRef()
     useEffect(() => {
         if (refCountry.current) {
             refCountry.current.clearLayers()
             refCountry.current.addData(countryBoundary)
         }
-    }, [refCountry, countryBoundary])
-
-    const refRegion = useRef()
-    useEffect(() => {
-        if (refRegion.current) {
-            refRegion.current.clearLayers()
-            refRegion.current.addData(regionBoundary)
+        if (refOverlay.current) {
+            refOverlay.current.clearLayers()
+            refOverlay.current.addData(countryBoundary)
         }
-    }, [refRegion, regionBoundary])
+    }, [refCountry, refOverlay, countryBoundary])
 
-    const refPoint = useRef()
-    useEffect(() => {
-        if (refPoint.current) {
-            refPoint.current.clearLayers()
-            refPoint.current.addData(points)
-        }
-    }, [refPoint, points])
+    const DefineMap = () => {
+        main_map = useMap();
+        main_map.on({'dblclick': function(){
+            window.open('./', '_self')
+        }})
 
-    function selectCountry(val) {
-        let par = {...param}
-        par['country'] = val
-        par['id'] = ''
-        par['multi'] = false
-        countries = [val]
-        setParam(par, {replace:false})
-    }
-    
-    function zoomFit(bounds) {
-        main_map.fitBounds(bounds)
+        const bounds = getBbox(countryBoundary)
+        main_map.flyToBounds(bounds)
     }
 
-    let countryTally = {}
-    data.forEach((row) => {
-        const arr = row.CountryID.split(', ');
-        arr.forEach((key) => {
-            countryTally[key] = countryTally[key] ? countryTally[key] + 1 : 1
-        })
-    })
+    function Legend({countInt, countExt}){
+        function label(c){
+            return <Stack direction='horizontal' gap={1}><i className='pi pi-circle-fill' 
+            style={{color:c['color'], opacity:0.25}}/>{c['label']}</Stack>
+        }
 
-    const countryMarker = (regionBoundary.length > 0) ? (<></>) :
-    (<> {countryBoundary.map((row, i) => {
-        const count = countryTally[row.properties.CountryID];
-        const icon = L.divIcon({
-            html: '<span><div class="cmarker">'+count+'</div></span>',
+        const colors = [
+            {
+                'color':'#e90051', 
+                'label':'internal evaluations'
+            }, 
+            {
+                'color':'#189cac', 
+                'label':'external evaluations'
+            }, 
+            {
+                'color':'#ffbd00', 
+                'label':'internal and external evaluations'
+            }, 
+        ]
+
+        let both = false
+        let idx = []
+        if (Object.keys(countInt).length > 0){
+            both = true
+            idx.push(0)
+        }
+        if (Object.keys(countExt).length > 0){
+            idx.push(1)
+            if (both){idx.push(2)}
+        }
+
+        return (
+          <div id='legend-panel' className='leaflet-bottom leaflet-left'>
+            <div className='leaflet-control'>
+                <div className='bg-light rounded p-1'>
+                    <b>Legend</b>
+                    {idx.map((i) => {
+                        const c = colors[i]
+                        return <Stack key={i} direction='horizontal' gap={1}><i className='pi pi-circle-fill' 
+                        style={{color:c['color'], opacity:0.75}}/>{c['label']}</Stack>
+                    })}
+                </div>
+            </div>
+          </div>
+        )
+    }
+
+    function Info(){
+        return (
+          <div className='leaflet-top leaflet-left'>
+            <div className='leaflet-control'>
+                <div id='info' className='bg-light rounded p-1'>
+                    Country:
+                </div>
+            </div>
+          </div>
+        )
+    }
+
+    function ZoomPanel(){
+        return (
+          <div id='zoom-panel' className='leaflet-bottom leaflet-right'>
+            <div className='leaflet-control'>
+            <ButtonGroup className='m-1'>
+              <Button variant='outline-danger' size='sm' title='Zoom-out' onClick={() => main_map.zoomOut()}><i className='pi pi-minus-circle'/></Button>
+              <Button variant='outline-danger' size='sm' title='Zoom-in' onClick={() => main_map.zoomIn()}><i className='pi pi-plus-circle'/></Button>
+            </ButtonGroup>
+            </div>
+          </div>
+        )
+    }
+
+    const overlayStyle = {
+        opacity: 0.02,
+        color: '#fff',
+        fillColor: '#fff',
+        weight: 1
+    }
+
+    function countryStyle(feature){
+        let idx = 0
+        const colors = ['#ffbd00', '#e90051', '#189cac', '#ffbd00']
+        
+        return {
+            opacity: 1,
+            color: colors[0],
+            fillColor: colors[0],
+            weight: 1
+        }
+    }
+
+    function iconTally(obj){
+        const content = renderToString(
+            <Stack direction='horizontal' gap={0}>
+            <CircleFlag countryCode={obj.CountryISO} height={20}/>
+            <div className='m-0 p-0'>
+                <Badge bg='danger' text='light'>{obj.count}</Badge>
+            </div>
+            </Stack>
+        )
+        let elem
+        elem = `<div>${content}</div>`
+        return L.divIcon({
+            html: elem,
             className: ''
         })
-        return <Marker 
-            position={[row.properties.Lat, row.properties.Lon]}
-            icon={icon}
-            key={i}
-        />
-    })}</>);
-    
-    function onEachCountry(feature, layer) {
+    }
+
+    const countryTally = useMemo(() => 
+    { return <> {
+        countryBoundary.map((row, i) => {
+            const icon = iconTally(row.properties)
+            return <Marker 
+                position={[row.properties.Lat, row.properties.Lon]}
+                icon={icon}
+                key={i}
+            />
+        })
+        }</>
+    }, [countryBoundary])
+
+    const theLegend = useMemo(() => {
+        //return <Legend countInt={countInt} countExt={countExt}/>
+        return <></>
+    }, [])
+
+    function onEachCountry(feature, layer){
+        const info = document.getElementById('info')
         layer.on({
             mouseover: function(e){
                 layer.setStyle({weight:4})
-
-                if (!setting.showLabel) {
-                    const prop = e.target.feature.properties
-                    const content = `<div><Badge>
-                        ${prop.Country}
-                        </Badge></div>`
-                    layer.bindTooltip(content)
-                    layer.openTooltip()    
-                }
+                const prop = e.target.feature.properties
+                info.innerHTML = `Country: <b>${prop.Country}</b> (${prop.count} evaluation${prop.count > 1 ? 's' : ''})`
             },
             mouseout: function(e){
                 layer.setStyle({weight:1})
-                layer.closeTooltip()
+                info.innerHTML = `Country:`
             },
             click: function(e){
                 layer.setStyle({weight:3})
-                zoomFit(e.target._bounds)
-                selectCountry(e.target.feature.properties.Country)
+                main_map.fitBounds(e.target._bounds)
+                //selectCountry(e.target.feature.properties.Country)
+                setParam({...feature.param, country:feature.properties.Country})
             }
         })
-    }
-
-    function onEachRegion (feature, layer) {
-        layer.bindTooltip(feature.properties.Region).addTo(main_map)
-        layer.openTooltip()
     }
 
     return (
         <div>
             <MapContainer
                 center={init.center}
-                zoom={init.zoom}
+                zoom={init.zoom}            
                 minZoom={3}
-                maxZoom={10}
+                maxZoom={10}            
                 attributionControl={false}
                 zoomAnimation={true}
+                zoomControl={false}
                 doubleClickZoom={false}
                 id='map-container'
-                style={{width:'100vw', height:height}}
+                style={{width:'100%', height:'72vh', borderRadius:'8px'}}
             >
 
                 <DefineMap />
 
-                <Pane name='basemap' style={{zIndex:60}}>
-                    <TileLayer url={basemaps[setting.basemap]}/>
+                <Pane name='basemap' style={{zIndex:50}}>
+                    <TileLayer url={basemaps['positron']}/>
                 </Pane>
 
-                <Pane name='country' style={{zIndex:70}}>
+                <Pane name='country-boundary' style={{zIndex:100}}>
                     <GeoJSON
                         data={countryBoundary}
-                        style={activeStyle}
+                        style={countryStyle}
                         ref={refCountry}
+                        />
+                </Pane>
+
+                <Pane name='overlay' style={{zIndex:300}}>
+                    <GeoJSON
+                        data={countryBoundary}
+                        style={overlayStyle}
+                        ref={refOverlay}
                         onEachFeature={onEachCountry}
                         />
                 </Pane>
 
-                <Pane name='marker' style={{zIndex:300}}>
-                    {countryMarker}
-
-                    <GeoJSON
-                        data={regionBoundary}
-                        style={regionStyle}
-                        ref={refRegion}
-                        onEachFeature={onEachRegion}
-                    /> 
+                <Pane name='country-tally' style={{zIndex:200}}>
+                    {countryTally}
                 </Pane>
 
-                <Pane name='points' style={{zIndex:500}}>
-                    {(coords.length > 0) ? (coords.map((c,i) => (
-                        <CircleMarker
-                            key={i} 
-                            center={[c[1],c[0]]} 
-                            radius={3}
-                            color='#000'
-                            opacity={0.9}
-                            fillOpacity={0.9}
-                            />))) : <></>}
-
-                </Pane>
-
-                {setting.showLabel ? <TileLayer url={basemaps['label']} zIndex={700}/> : <></>}
+                <ZoomPanel/>
+                {theLegend}
+                <Info/>
 
             </MapContainer>
         </div>
