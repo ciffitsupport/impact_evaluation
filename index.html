@@ -2,14 +2,23 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="./assets/favicon-wRMcnaQ1.png" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CIFF Impact Portal</title>
-    <script type="module" crossorigin src="./assets/index-gDdHCwfQ.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-Ca7kpfsK.css">
+    <title>CIFF Impact Evaluation Portal</title>
+    <script type="module" crossorigin src="./assets/index-CYWhp3PI.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-BVG1oMVo.css">
   </head>
   <body>
-    <div id="root"></div>
-
+    <div id="root"></div>
   </body>
+  <style>
+    html { display : none; }
+  </style>
+  <script>
+    if (self == top) {
+      document.documentElement.style.display = 'block';
+    } else {
+      top.location = self.location;
+    }
+  </script>
 </html>
