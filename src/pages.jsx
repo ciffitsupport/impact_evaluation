@@ -18,8 +18,8 @@ export function About () {
 
             <h5>Acknowledgement</h5>
             <ul>
-            <li>India Administrative Boundaries were sourced from: Ministry of Science and Technology, Government of India. Survey of India. Online Maps Portal. Administrative Boundary Database (<a href='https://onlinemaps.surveyofindia.gov.in/Digital_Product_Show.aspx' target='_blank'>OVSF/1M/7</a>).
-            </li>
+            {/*<li>India Administrative Boundaries were sourced from: Ministry of Science and Technology, Government of India. Survey of India. Online Maps Portal. Administrative Boundary Database (<a href='https://onlinemaps.surveyofindia.gov.in/Digital_Product_Show.aspx' target='_blank'>OVSF/1M/7</a>).
+            </li>*/}
 
             <li>Nigeria Administrative Boundaries were sourced from: eHealth Africa and Proxy Logics (2020). Nigeria Operational State Boundaries. Geo-Referenced Infrastructure and Demographic Data for Development (<a href='https://grid3.gov.ng/' target='_blank'>GRID3</a>).
             </li>

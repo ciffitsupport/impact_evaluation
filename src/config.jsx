@@ -3,15 +3,20 @@ import boundary from './data/boundary.json'
 import table from './data/impact_table.json';
 
 //const icons = import.meta.glob("./../public/icon-*")
-const countryList = boundary.features.map((item) => {return item.properties.Country}).filter(onlyUnique);
 const evalIDs = table.map((item) => {return item.EvaluationID});
-
-export const columns = {
-    'country':'Country', 'sector':'Sector', 'type':'Type', 'funder':'Funder', 'yearsOfInvestment':'Years of Investment'}
-
+const countryList = boundary.features.map((item) => {return item.properties.Country}).filter(onlyUnique);
 export const regionList = boundary.features.filter((item) => {return item.properties.Level === 'ADM_1'}).map((item) => {return {'Country':item.properties.Country, 'Region':item.properties.Region}})
+
+//used for filtering
+export const columns = {
+    'country':'Country', 
+    'sector':'Sector', 
+    'type':'Type', 
+    'funder':'Funder', 
+    'yearsOfInvestment':'Years of Investment'}
+
 export const homepage = 'localhost:5173'
-export const shortContent = ['Country', 'Sector', 'Type', 'Primary Outcome', 'Implementing Agency', 'Evaluation Agency', 'Funder']
+export const shortContent = ['Country', 'Sector', 'Type', 'Primary Outcomes', 'Implementing Agency', 'Evaluation Agency', 'Funder']
 export const midContent = ['Sector', 'Type', 'Funder']
 export const longContent = ['Programme Description', 'Study Design', 'Areas of Programme', 'Impact Statement']
 export const fields = {

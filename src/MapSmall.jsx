@@ -22,7 +22,7 @@ export function MapSmall({ data }){
     }
     
     if (data.Coordinate !== ''){
-        points = data.Coordinate
+        points = JSON.parse(data.Coordinate)
     }
 
     let regions = []
@@ -73,9 +73,9 @@ export function MapSmall({ data }){
             <div className='leaflet-control'>
                 <div className='bg-light rounded p-1'>
                     <b>Legend</b>
-                    <Stack direction='horizontal' gap={1}><i className='pi pi-circle-fill' style={{color:'#e90051', opacity:0.5}}/>Targetted country</Stack>
-                    {showRegion ? <Stack direction='horizontal' gap={1}><i className='pi pi-circle-fill' style={{color:'#ffbd00', opacity:1.0}}/>Targetted region</Stack> : <></>}
-                    {showPoints ? <Stack direction='horizontal' gap={1}><i className='pi pi-circle-fill'/>Targetted location</Stack> : <></>}
+                    <Stack direction='horizontal' gap={1}><i className='pi pi-circle-fill' style={{color:'#e90051', opacity:0.5}}/>Targeted country</Stack>
+                    {showRegion ? <Stack direction='horizontal' gap={1}><i className='pi pi-circle-fill' style={{color:'#ffbd00', opacity:1.0}}/>Targeted region</Stack> : <></>}
+                    {showPoints ? <Stack direction='horizontal' gap={1}><i className='pi pi-circle-fill'/>Targeted location</Stack> : <></>}
                 </div>
             </div>
           </div>

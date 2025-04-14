@@ -12,7 +12,7 @@ export function Evaluation() {
     let location = useLocation()
     const path = location.pathname.split('/')[2].split('-')
     const obj = table.filter((row) => row['EvaluationID'] === path[0])
-    console.log(obj)
+
     return (
         <div>
             {obj.length > 0 ? (

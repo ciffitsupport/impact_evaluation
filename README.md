@@ -11,9 +11,8 @@ To support impact evaluation performed by [Children Investment Fund Foundation (
 | Project lead | Carla Pezzulo |
 | Development Team | Rhorom Priyatikanto, Maksym Bondarenko |
 | | [SDI Worldpop, University of Southampton](https://sdi.worldpop.org) |
-| Repository | https://rhorom.github.com/ciff_impact_portal |
-| Web URL | https://rhorom.github.io/ciff_impact_portal |
-| | https://impact.ciff.org |
+| Repository | https://github.com/ciffitsupport/impact_evaluation |
+| Web URL | https://impact.ciff.org |
 
 ## About this file
 The purpose of this file is to provide overview, background information, and setup information of the project. If you have joined this project as a part of the development team, please ensure this file is up to date.
@@ -181,7 +180,7 @@ To be noted that `Sector`, `Type`, `Funder`, and `Years of Investment` are used 
         "Funder":"CIFF",
         "Country":["Ethiopia"],
         "Region":["Amhara", "Oromia"],
-        "Coordinate":"",
+        "Coordinate":"[[0,0],[0,0.1]]",
         "Sector":"Maternal and Newborn Health",
         "Primary Outcomes":"Low birth weight (LBW)",
         "Type":"Impact evaluation",
@@ -211,15 +210,15 @@ To modify the content of this file, just edit the value according to the rules s
 ![detail](public/detail-info.PNG)
 
 ### Alternative edit
-To edit an evaluation entry's JSON record according to the defined standard, use the editing form accessible in this [https://rhorom.github.io/ciff_impact_portal/#/edit](page).
+To edit an evaluation entry's JSON record according to the defined standard, use the editing form accessible in this [https://impact.ciff.org/ciff_impact_portal/#/edit](page).
 
-Existing records are listed in a table, each with an `Edit` button. To create a new record, click the `Create` button at the top.
+Existing records/evaluations are listed in a table. By clicking a particular record, an editable form will open. Modify the field values, referring to the short info provided for each field to ensure correct input.
 
-Clicking either button will open the editor form. Modify the field values, referring to the short info provided for each field to ensure correct input.
+To create a new record, click `Empty Form` at the top.
 
 To download the JSON file for the currently edited entry, click `Download` at the bottom. To download a JSON file containing all records, including your updates, click `Merge and Download`.
 
-Finally, append or merge the downloaded file with `src/data/impact_table.json`.
+Finally, append or merge the downloaded file with `src/data/impact_table.json`. Redeployment will be required to update the github page. See [Deployment setup](#deployment-setup) for more instruction.
 
 ## Development setup
 1. Install [Node.js](https://nodejs.org/en/download/) and [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm).
@@ -257,6 +256,8 @@ Finally, append or merge the downloaded file with `src/data/impact_table.json`.
     
 1. Deploy as a github page:```npm run deploy```
 
+Updating the source code can be done using [Git bash](https://gitforwindows.org/).
+
 ## Content update
 ### Pages
 Contents on 'About' and 'Guide' are defined in `src/Pages.jsx`. Then, any update on any of those pages can be conducted by modifying the source file.
@@ -288,6 +289,44 @@ As stated above, image files are stored in `./public/` directory, including icon
         'WASH': './icon-wash.png'
     }
     ```
+
+1. **Adjusting fields/columns**. As described in [Impact table](#impact-table-srcdataimpact_tablejson) section, there are several keys/fields recorded in the table. More fields can be added to the table. Following this kind of changes, editing form should be adjusted. In `./src/config.jsx`, there is `fields` constant defining the field name/title, type, and default value.
+
+    ```js
+    export const fields = {
+        'evaluationID':{
+            'title':'EvaluationID', 
+            'type':'text', 
+            'info':'Should be unique number', 
+            'default':1+Math.max(...evalIDs)}, 
+        'investmentName':{
+            'title':'Investment Name', 
+            'type':'text', 
+            'info':'', 
+            'default':''}, 
+        ...
+        'funder':{
+            'title':'Funder', 
+            'type':'select', 
+            'options':['CIFF','Implementing Organisation','CIFF + Implementing Organisation', 'CIFF + Other Funder'], 
+            'info':'', 'default':''}, 
+        'country':{
+            'title':'Country', 
+            'type':'country', 
+            'options':countryList, 
+            'info':'Press CTRL to select multiple countries', 
+            'default':''},
+    } 
+
+    ```
+    Here is additional note on the type of input.
+    | type | description |
+    | ---- | ---- |
+    | text | text input |
+    | select | select from drop-down list |
+    | country | multi-select from drop-down list of countries and regions |
+    | rte | rich text editor |
+
 
 1. **Adding new evaluations**. Please go to [Data structure and update](#data-structure-and-update) section.
 
