@@ -1,9 +1,70 @@
 import glossary from './data/glossary.json'
 import 'primeicons/primeicons.css'
-import { Badge, Table, Form, FloatingLabel, Button } from 'react-bootstrap'
+import { Badge, Button, Col, Table, Form, FloatingLabel, Modal, Row } from 'react-bootstrap'
+import { Formik } from 'formik'
 import { basemaps } from './config'
 import { columns } from './config'
 
+async function auth(obj){
+    const token = obj.token;
+    const username = obj.username;
+    const repoName = 'impact_evaluation';
+    const filePath = 'package.json';
+  
+    const url = `https://api.github.com/repos/${username}/${repoName}/contents/${filePath}`;
+  
+    try {
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/vnd.github+json',
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error(`GitHub API error: ${response.status} - ${response.statusText}`);
+      }
+  
+      const data = await response.json();
+      const content = atob(data.content);
+      const jsonData = JSON.parse(content);
+      if (jsonData.name == repoName){
+        return false
+      } else {
+        alert('Wrong credentials')
+        return true
+      }
+    } catch (error) {
+      alert('Wrong credentials')
+      console.error('Error fetching or parsing JSON:', error);
+      throw error;
+    }
+}
+  
+export function Login({locked, setLocked}) {
+    return <Modal show={locked} fullscreen>
+    <Modal.Body>
+      <div className='container p-5 border border-danger border-2 rounded'>
+      <Formik 
+        onSubmit={(values) => {auth(values).then((data)=>{setLocked(data)})}}
+        initialValues={{'username':'', 'token':''}}
+        >
+        {({ handleSubmit, handleChange, values }) => (
+          <Form noValidate onSubmit={handleSubmit}>
+            <Col md={{ span: 6, offset: 3 }}>
+              <Form.Group as={Row}>
+                <Form.Control className='mb-2' type='text' name='username' placeholder='Username' onChange={handleChange}></Form.Control><br/>
+                <Form.Control className='mb-2' type='password' name='token' placeholder='Token' onChange={handleChange}></Form.Control><br/>
+                <Button variant='danger' type="submit">Submit</Button>
+                </Form.Group>
+            </Col>
+          </Form>
+        )}
+      </Formik>
+      </div>
+    </Modal.Body>
+  </Modal>
+}
 export function About () {
     return (
         <div>

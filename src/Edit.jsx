@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Accordion, Button, Form, InputGroup, Col, Row } from 'react-bootstrap';
 import { Formik } from 'formik';
 import { DefaultEditor } from 'react-simple-wysiwyg';
@@ -5,7 +6,7 @@ import 'primeicons/primeicons.css'
 
 import table from './data/impact_table.json';
 import { fields, regionList } from './config';
-
+import { Login } from './Pages';
 const evalIDs = table.map((item) => {return item.EvaluationID});
 
 function restructure(obj){
@@ -189,6 +190,8 @@ function TheForm({ id, initialValues }) {
 }
 
 export function Edit(){
+    const [locked, setLocked] = useState(true)
+
     return <div>
         <div className='border border-warning'>
             <h5 className='p-2 bg-danger text-light'>Create New Entry</h5>
@@ -197,5 +200,7 @@ export function Edit(){
             <h5 className='p-2 bg-danger text-light'>Existing Evaluations</h5>
             <Evaluations data={table}/>
         </div>
+
+        <Login locked={locked} setLocked={setLocked} />
     </div>
 }
