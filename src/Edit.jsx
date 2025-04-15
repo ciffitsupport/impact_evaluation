@@ -66,6 +66,9 @@ function Evaluations({data}){
         var init = {};
         const data = table.filter((item) => {return item.EvaluationID === id})
         Object.keys(fields).forEach((k)=>{init[k] = data[0][fields[k]['title']]})
+        const years = init['yearsOfInvestment'].split(', ').map((y)=>{return parseInt(y)})
+        init['yearsOfInvestment_start'] = Math.min(...years)
+        init['yearsOfInvestment_end'] = Math.max(...years)
 
         items.push(<Accordion.Item key={i} eventKey={i}>
             <Accordion.Header>{item['Proposed Public Title']}</Accordion.Header>
@@ -160,9 +163,9 @@ function TheForm({ id, initialValues }) {
                                 <Form.Label column sm={3}>{labelInfo(fields[k])}</Form.Label>
                                 <Col sm={9}>
                                 <InputGroup onChange={handleChange} name={k} size='sm'>
-                                    <Form.Control type='text' name={k+'_start'}/>
+                                    <Form.Control type='text' defaultValue={values[k+'_start']} name={k+'_start'}/>
                                     <InputGroup.Text>to</InputGroup.Text>
-                                    <Form.Control type='text' name={k+'_end'}/>
+                                    <Form.Control type='text' defaultValue={values[k+'_end']} name={k+'_end'}/>
                                 </InputGroup>
                                 </Col>
                             </Form.Group>
